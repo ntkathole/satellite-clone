@@ -56,6 +56,10 @@
   register: enable_repos_result
   when: enable_repos
 
+- name: enable puppet4 rpms
+  command: subscription-manager repos --enable rhel-7-server-satellite-6.3-puppet4-rpms
+  when: enable_repos
+
 - name: set fact - enable_repos_result
   set_fact:
     enable_repos_result_fail: "{{ (enable_repos_result.rc | int) != 0}}"
