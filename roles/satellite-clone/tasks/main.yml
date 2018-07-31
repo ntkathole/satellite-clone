@@ -236,12 +236,25 @@
     command: foreman-rake foreman_tasks:cleanup TASK_SEARCH='label ~ *' STATES='paused'  VERBOSE=true AFTER='0h'  VERBOSE=true
     when: satellite_version in ["6.2", "6.3"]
 
+  # Handle Puppet Enterprise
+  - name: Create cache
+    file: path=/opt/puppetlabs/puppet/cache/ state=directory mode=0755
+  - name: Copy foreman_cache_data
+    command: cp -r /var/lib/puppet/foreman_cache_data /opt/puppetlabs/puppet/cache/
+
   - name: Run installer upgrade (satellite 6.2+ only)
     command: 'satellite-installer --upgrade {{ satellite_upgrade_options | default("") }}'
     environment:
       HOSTNAME: "{{ hostname }}"
     when: satellite_version in ["6.2", "6.3"]
 
+  - name: Setup hammer for foreman-maintain
+    lineinfile:
+      path: /etc/foreman-maintain/foreman-maintain-hammer.yml
+      state: present
+      create: yes
+      line: "---\n:foreman:\n  :username: admin\n  :password: changeme"
+      
   - name: Test Satellite
     command: hammer ping
 
